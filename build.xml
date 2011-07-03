@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<project name='BlogStrandNeurons' default='help' basedir='.'>
+
+	<!-- ========================================= -->
+
+	<target name='help'>
+		<echo>
+			BlogStrand Application
+		</echo>
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='init'>
+		<property name='webcontent.dir' value='${basedir}/WebContent' />
+		<property name='build.dir' value='${basedir}/build' />
+		<property name='ikat.war' value='${build.dir}/ikat.war' />
+
+		<!-- installation specific -->
+		<property name='wink.home' value='G:\apache-wink-1.1.2-incubating' />
+		<property name='mongodb.dir' value='G:\JSONLibraries\mongo-2.4.jar'/>
+		<property name='tomcat.home' value='C:\apache-tomcat-7.0.8' />
+
+		
+		<path id='clt.classpath'>
+			<pathelement location='${basedir}/classes' />
+			<!--<pathelement location='${junit.jar}' /> -->
+			<pathelement location='${wink.home}/dist/wink-1.1.2-incubating.jar' />
+			<pathelement location='${basedir}/lib/mongo-2.4.jar' />
+			
+			<fileset dir='${wink.home}/lib'>
+				<include name='**/*.jar' />
+			</fileset>
+		</path>
+
+		<path id='build.classpath'>
+			<pathelement location='${basedir}/classes' />
+			<!--<pathelement location='${junit.jar}' /> -->
+			<pathelement location='${basedir}/lib/mongo-2.4.jar' />
+			<pathelement location='${basedir}/lib/jackson-core-asl-1.7.6.jar' />
+			<pathelement location='${basedir}/lib/jackson-jaxrs-1.7.6.jar' />
+			<pathelement location='${basedir}/lib/jackson-mapper-asl-1.7.6.jar' />
+			<pathelement location='${basedir}/lib/jackson-xc-1.7.6.jar' />
+			<fileset dir='${wink.home}/lib'>
+				<include name='**/*.jar' />
+			</fileset>
+			<fileset dir='${wink.home}/dist'>
+				<include name='**/*.jar' />
+			</fileset>
+		</path>
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='clean' depends='init'>
+		<delete dir='${build.dir}' />
+		<delete dir='${basedir}/classes' />
+		<mkdir dir='${basedir}/classes' />
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='compile' depends='init'>
+		<javac debug='on' fork='true' destdir='${basedir}/classes' srcdir='${basedir}/src' classpathref='build.classpath'>
+		</javac>
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='war' depends='compile'>
+		<mkdir dir='${build.dir}' />
+		<war destfile="${build.dir}/ikat.war" webxml="${webcontent.dir}/WEB-INF/web.xml">
+			<webinf dir="${webcontent.dir}/WEB-INF" includes="**/*" />
+			<classes dir="${basedir}/classes" includes="**/*" />
+			<lib dir="${wink.home}/lib" includes="*.jar" />
+			<lib file="${wink.home}/dist/wink-common-1.1.2-incubating.jar" />
+			<lib file="${wink.home}/dist/wink-server-1.1.2-incubating.jar" />
+			<lib file="${basedir}/lib/*" />
+		</war>
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='deploy' depends='war'>
+		<copy todir='${tomcat.home}/webapps' file='${ikat.war}' />
+	</target>
+
+	<!-- ========================================= -->
+
+	<target name='demo' depends='compile'>
+		<java fork='yes' maxmemory='512m' classname='com.blog.client.BlogClient'>
+			<classpath refid='clt.classpath' />
+		</java>
+	</target>
+
+</project>
